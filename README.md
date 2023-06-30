@@ -15,14 +15,14 @@ El STACK que estamos usando en este proyecto es el siguiente:
 1. Instale el manejador de paquetes de su preferencia.
 
 	npm install 
-	# o 
+	 o 
 	yarn install 
 
 
 2. Inicializar el servidor de desarrollo.
 
 	npm run dev 
-	# o
+	 o
 	yarn dev 
 	
 3. Abrir en el navegador 
