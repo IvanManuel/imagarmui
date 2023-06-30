@@ -18,7 +18,7 @@ type FormData = {
     lastName: string;
     email: string;
     password: string;
-    password2: string;
+    passwordConfirmation: string;
     admin: boolean;
     phone: string;
     photo: string;
@@ -29,12 +29,20 @@ type FormData = {
 
 const schema = yup
     .object({
-        firstName: yup.string().required(),
-        lastName: yup.string().required(),
-        email: yup.string().required(),
-        password: yup.string().required(),
-        password2: yup.string().required(),
-        phone: yup.string().required(),
+        firstName: yup.string().required().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!'),
+        lastName: yup.string().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!').required(),
+        email: yup.string().email('Ingresa un email válido').required('Required'),
+        password: yup.string()
+        .required('No password provided.') 
+        .min(8, 'Mínimo 8 caracteres.')
+        .max(50, 'Máximo 50 caracteres.')
+        .matches(validations.passwordRegex, 'La contraseña debe contener un mínimo de 8 dígitos y al menos: una letra mayúscula: A-Z, una letra minúscula: a-z, un número: 0-9 y un símbolo: # ! , . %'),
+        passwordConfirmation: yup.string()
+        .oneOf([yup.ref('password'), null], 'Contraseñas no corresponden'),
+        phone: yup.string().required()
+        .min(9, 'Mínimo 8 caracteres.')
+        .max(10, 'Máximo 50 caracteres.')
+        .matches(validations.onlyNumbers, 'Sólo debe contener números'),
         photo: yup.string(),
         bornedAt: yup.string().required(),
         coments: yup.string().required(),
@@ -47,8 +55,6 @@ const RegisterPage = () => {
 
     const [showError, setShowError] = useState(false);
     const [checked, setChecked] = useState(false);
-
-    const router = useRouter();
 
     const {
         register,
@@ -155,7 +161,7 @@ const RegisterPage = () => {
                                 fullWidth
                                 {...register('email', {
                                     required: 'Este campo es requerido',
-                                    validate: validations.isEmail,
+                                    validate: validations.isValidEmail,
                                     maxLength: { value: 100, message: 'Máximo 100 caracteres' }
                                 })}
                                 error={!!errors.email}
@@ -186,12 +192,12 @@ const RegisterPage = () => {
                                 type='password'
                                 variant="filled"
                                 fullWidth
-                                {...register('password2', {
+                                {...register('passwordConfirmation', {
                                     required: 'Esta campo es requerido',
                                     minLength: { value: 6, message: 'Mínimo 6 caracteres' }
                                 })}
-                                error={!!errors.password2}
-                                helperText={errors.password2?.message}
+                                error={!!errors.passwordConfirmation}
+                                helperText={errors.passwordConfirmation?.message}
                             />
                         </Grid>
 
