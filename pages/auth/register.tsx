@@ -19,6 +19,7 @@ type FormData = {
     email: string;
     password: string;
     password2: string;
+    admin: boolean;
     phone: string;
     photo: string;
     bornedAt: string;
@@ -34,10 +35,10 @@ const schema = yup
         password: yup.string().required(),
         password2: yup.string().required(),
         phone: yup.string().required(),
-        photo: yup.string().required(), //Esto no es obligatorio
+        photo: yup.string(),
         bornedAt: yup.string().required(),
         coments: yup.string().required(),
-        privateComents: yup.string().required(),
+        privateComents: yup.string()
     })
     .required()
 
@@ -60,12 +61,8 @@ const RegisterPage = () => {
     const { startRegister } = useAuthStore();
 
     const onSubmit = (data: FormData) => {
-        if (data.password !== data.password2) {
-            return
-        }
-
         startRegister(data);
-        router.push('/')
+        console.log('DATA', data)
     }
 
     const handleChange = (event) => {
@@ -79,6 +76,7 @@ const RegisterPage = () => {
                 <Box sx={{ mr: 5, ml: 5 }} >
 
                     <Grid
+                        item
                         xs={12} sm={6}
                         sx={{ mt: 5, mb: 2 }}
                     >
@@ -93,9 +91,28 @@ const RegisterPage = () => {
                     </Grid>
 
                     <Grid
+                            item
+                            xs={12} sm={6}
+                        >
+                            <TextField
+                                type="checkbox"
+                                label="Rol"
+                                variant="filled"
+                                {...register('admin', {
+                                    required: 'Esta campo es requerido',
+                                    minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                                    maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+                                })}
+                                error={!!errors.admin}
+                                helperText={errors.admin?.message}
+                            />
+                            <Typography>Marque si el usuario es administrador</Typography>
+                        </Grid>
+
+                    <Grid
                         container
                         spacing={2}
-                    >
+                    >                        
 
                         <Grid
                             item
@@ -247,7 +264,6 @@ const RegisterPage = () => {
                                 fullWidth
                                 multiline
                                 {...register('privateComents', {
-                                    required: 'Esta campo es requerido',
                                     minLength: { value: 4, message: 'Mínimo 4 caracteres' },
                                     maxLength: { value: 200, message: 'Máximo 200 caracteres' }
                                 })}
@@ -267,7 +283,6 @@ const RegisterPage = () => {
                         checked={checked}
                         onChange={handleChange}
                         inputProps={{ 'aria-label': 'primary checkbox' }}
-                        label="Gilad Gray"
                     />
                     </Box>
 

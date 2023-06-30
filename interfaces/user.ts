@@ -8,7 +8,7 @@ export interface IUser {
     phone       : string;
     images?     : string[];
     bornedAt    : string;
-    role        : string;
+    admin        : boolean;
     coments     : string;
     privateComents : string;
     createdAt?  : string;

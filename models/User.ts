@@ -1,5 +1,6 @@
 import mongoose, { Schema, model, Model } from "mongoose";
 import { IUser } from '../interfaces';
+import { boolean } from "yup";
 
 const userSchema = new Schema({
 
@@ -37,21 +38,18 @@ const userSchema = new Schema({
         type: Date,
         required: true,
     },
-    role: {
-        type: String,
-        enum: {
-            values: ['admin', 'user'],
-            message: '{VALUE} no es un  rol válido',
-            default: 'client',
-            required: true
-        }
+    admin: { 
+        type: Boolean, 
+        required: true, 
+        default: false 
     },
     coments: {
         type: String,
         required: true
     },
     privateComents: {
-        type: String
+        type: String,
+        default: ''
     }
 
 }, {

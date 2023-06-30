@@ -15,7 +15,7 @@ const columns: GridColDef[] = [
     { field: 'lastName', headerName: 'Apellido', width: 120 },
     { field: 'email', headerName: 'Correo', width: 200 },
     { field: 'phone', headerName: 'Teléfono', width: 100 },
-    { field: 'role', headerName: 'Rol', width: 100 },
+    { field: 'admin', headerName: 'Rol', width: 100 },
     { field: 'bornedAt', headerName: 'F Nacimiento', align: 'center', width: 150 },
     {
         field: 'check',
@@ -77,7 +77,7 @@ const UsersPage: FC = () => {
         bornedAt: user.bornedAt,
         coments: user.coments,
         privateComents: user.privateComents,
-        role: user.role,
+        admin: user.admin,
     }))
 
     const onProfile = () =>{

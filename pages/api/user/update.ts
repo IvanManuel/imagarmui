@@ -37,15 +37,10 @@ const getUsers = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
 const updateUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
-    const { userId = '', role = '' } = req.body;
+    const { userId = '', admin = false } = req.body;
 
     if( !isValidObjectId( userId ) ){
         return res.status(400).json({ message: 'No existe usuario con ese ID' })
-    }
-
-    const validRoles = [ 'admin', 'client' ]; //Verificar que el ID que manda únicamente sea el del usuario
-    if ( !validRoles.includes(role) ){
-        return res.status(400).json({ message: 'Rol no permitido: ' + validRoles.join(', ') })
     }
 
     await db.connect();
@@ -55,7 +50,7 @@ const updateUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         res.status(404).json({ message: 'Usuario no encontrado ' + userId });
     }
 
-    user!.role = role; //TS arrojaba error de que user podiar venia vacío, tuve que colocar !
+    user!.admin = admin; //TS arrojaba error de que user podiar venia vacío, tuve que colocar !
     await user!.save();
 
     await db.disconnect();

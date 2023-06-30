@@ -19,12 +19,12 @@ export const checkUserEmailPassword = async( email: string = '', password: strin
         return null;
     }
 
-    const { role, firstName, _id } = user;
+    const { admin, firstName, _id } = user;
 
     return {
         id: _id,
         email: email.toLocaleLowerCase(),
-        role,
+        admin,
         firstName,
     }
 

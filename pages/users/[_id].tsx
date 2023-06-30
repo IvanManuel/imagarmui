@@ -15,7 +15,7 @@ const UserPage: NextPage<Props> = ({ user }) => {
 
     if (!user) return (<></>);
 
-    const { firstName = '', lastName, email, phone, bornedAt, coments, privateComents, role } = user;
+    const { firstName = '', lastName, email, phone, bornedAt, coments, privateComents, admin } = user;
 
     return (
         <LoginLayout>
@@ -36,10 +36,10 @@ const UserPage: NextPage<Props> = ({ user }) => {
                                     <Typography>Correo Electrónico: {email}</Typography>
                                     <Typography>Teléfono: {phone} </Typography>
                                     <Typography>Fecha de Nacimiento: {bornedAt}</Typography>
-                                    <Typography>Rol: {role}</Typography>
+                                    <Typography>Rol: { admin ? 'Admin' : 'Client'}</Typography>
                                     <Typography>Comentarios: {coments}</Typography>
                                     {
-                                        (role === 'admin') && (
+                                        (admin === true) && (
                                             <Typography>Comentarios privados: {privateComents}</Typography>
                                         )
                                     }

@@ -13,7 +13,7 @@ type Data =
     user: {
         email: string;
         firstName: string;
-        role: string;
+        admin: boolean;
     }
  }
 
@@ -58,13 +58,13 @@ const checkJWT = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         })
     }
 
-    const { _id, email, role, firstName } = user;
+    const { _id, email, admin, firstName } = user;
 
     return res.status(200).json({
         token: jwt.signToken( _id, email ),
         user: {
             email, 
-            role, 
+            admin, 
             firstName
         }
     })

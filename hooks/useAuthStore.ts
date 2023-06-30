@@ -41,7 +41,7 @@ export const useAuthStore = () => {
                 phone: data.user.phone,
                 images: data.user.images,
                 bornedAt: data.user.bornedAt,
-                role: data.user.role,
+                admin: data.user.admin,
                 coments: data.user.coments,
                 privateComents: data.user.privateComents,
                 photoURL: data.user.photoURL
@@ -69,7 +69,7 @@ export const useAuthStore = () => {
                 phone: data.user.phone,
                 images: data.user.images,
                 bornedAt: data.user.bornedAt,
-                role: data.user.role,
+                admin: data.user.admin,
                 coments: data.user.coments,
                 privateComents: data.user.privateComents,
                 photoURL: data.user.photoURL

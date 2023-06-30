@@ -10,6 +10,7 @@ interface IRegister {
     lastName    : string;
     email       : string;
     password    : string;    
+    admin       : boolean;
     phone       : string;    
     bornedAt    : string;
     coments     : string;
@@ -23,7 +24,7 @@ type Data =
     user: {
         email: string;
         firstName: string;
-        role: string;
+        admin: boolean;
     }
  }
 
@@ -48,6 +49,7 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         lastName,
         email,
         password,
+        admin,
         phone,
         bornedAt,
         coments,
@@ -86,11 +88,11 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         lastName,
         email: email.toLocaleLowerCase(),
         password: bcrypt.hashSync( password ),
+        admin,
         phone,
         bornedAt,
         coments,
         privateComents,
-        role: 'user',
     });
 
     try {
@@ -115,11 +117,11 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
             firstName,
             lastName,
             email,
+            admin,
             phone,
             bornedAt,
             coments,
-            privateComents,
-            role: 'client'
+            privateComents
         }
     })
 
