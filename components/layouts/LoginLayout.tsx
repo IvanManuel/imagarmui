@@ -16,7 +16,6 @@ export const LoginLayout = ({ children, title = '' }) => {
       <Grid 
       item
        className='box-shadow'
-       xs={ 4 }
        sx={{ 
             backgroundColor: 'white', 
             padding: 3, 

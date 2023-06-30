@@ -13,6 +13,8 @@ interface Props {
 
 const UserPage: NextPage<Props> = ({ user }) => {
 
+    if (!user) return (<></>);
+
     const { firstName = '', lastName, email, phone, bornedAt, coments, privateComents, role } = user;
 
     return (

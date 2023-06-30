@@ -15,15 +15,7 @@ const columns: GridColDef[] = [
     { field: 'lastName', headerName: 'Apellido', width: 120 },
     { field: 'email', headerName: 'Correo', width: 200 },
     { field: 'phone', headerName: 'Teléfono', width: 100 },
-    {
-        field: 'role',
-        headerName: 'Rol',
-        renderCell: ({ row }: GridRenderCellParams) => {
-            return row.role === 'admin'
-                ? (<Chip variant='outlined' label='Admin' color='success' />)
-                : (<p>Usuario</p>)
-        }
-    },
+    { field: 'role', headerName: 'Rol', width: 100 },
     { field: 'bornedAt', headerName: 'F Nacimiento', align: 'center', width: 150 },
     {
         field: 'check',
@@ -56,8 +48,10 @@ const columns: GridColDef[] = [
 
 const UsersPage: FC = () => {
 
-    const { status, checkAuthToken, startLogout } = useAuthStore();
+    const { user, checkAuthToken, startLogout } = useAuthStore();
     const router = useRouter();
+
+    console.log('STATUSUSER', user)
 
     useEffect(() => {
         checkAuthToken();
@@ -86,6 +80,12 @@ const UsersPage: FC = () => {
         role: user.role,
     }))
 
+    const onProfile = () =>{
+        console.log(user.uid);  
+        if (user.uid === undefined) return;
+        router.push(`/users/${ user.uid}`)
+    }
+
     const signOut = () => {
         startLogout();
     }
@@ -100,7 +100,7 @@ const UsersPage: FC = () => {
                 <Button
                     startIcon={<AccountCircleOutlined />}
                     color="secondary"
-                    href='/auth/login'
+                    onClick={ onProfile }
                 >
                     Perfil
                 </Button>

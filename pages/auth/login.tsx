@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { useAuthStore } from '@/hooks';
 import { useRouter } from "next/router"
 import { LoginLayout } from "@/components/layouts/LoginLayout"
+import NextLink from 'next/link'
+
 
 type FormData = {
     email: string;
@@ -38,11 +40,14 @@ const LoginPage = () => {
         resolver: yupResolver(schema),
     })
 
-    const { startLogin } = useAuthStore();
+    const { startLogin, status } = useAuthStore();
 
-    const onSubmit = (data: FormData) => {
-        startLogin(data);
-        router.push('/');
+    const onSubmit = async (data: FormData) => {
+        await startLogin(data);
+        if( status === 'authenticated' ) {
+            router.push('/');
+        }
+
     }
 
 
@@ -113,6 +118,9 @@ const LoginPage = () => {
                         </Button>
                         </Box>
                     </Grid>
+
+                            <Typography>Haz click aquí para </Typography>
+                    <NextLink href="/auth/register">Registrar</NextLink>
 
                 </Grid>
             </Box>
