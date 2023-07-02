@@ -57,19 +57,19 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
     } = req.body as IRegister;
 
     if ( password.length < 6 ) {
-        return res.status(400).json({
+        return res.status(401).json({
             message: 'La contraseña debe de ser de 6 caracteres o más'
         });
     }
 
     if ( firstName.length < 2 ) {
-        return res.status(400).json({
+        return res.status(402).json({
             message: 'El nombre debe de ser de 2 caracteres'
         });
     }
 
     if ( !validations.isValidEmail( email ) ) {
-        return res.status(400).json({
+        return res.status(403).json({
             message: 'Formato de correo inválido'
         });
     }
@@ -78,7 +78,7 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
     const user = await User.findOne({ email });
 
     if ( user ) {
-        return res.status(400).json({
+        return res.status(404).json({
             message: 'Este correo ya está registrado'
         })
     }

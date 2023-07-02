@@ -39,7 +39,6 @@ export const getUserById = async( id: string ): Promise<IUser | null> => {
     await db.connect();
     const user = await User.findById( id ).lean();
     await db.disconnect();
-    console.log('USER', user)
 
     if ( !user ){
         return null;

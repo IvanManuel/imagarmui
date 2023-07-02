@@ -40,13 +40,16 @@ const schema = yup
         passwordConfirmation: yup.string()
         .oneOf([yup.ref('password'), null], 'Contraseñas no corresponden'),
         phone: yup.string().required()
-        .min(9, 'Mínimo 8 caracteres.')
-        .max(10, 'Máximo 50 caracteres.')
+        .min(9, 'Son 9 caracteres.')
+        .max(9, 'Son 9 caracteres.')
         .matches(validations.onlyNumbers, 'Sólo debe contener números'),
         photo: yup.string(),
-        bornedAt: yup.string().required(),
-        coments: yup.string().required(),
+        bornedAt: yup.date().required().nullable().min(new Date(1900, 0, 1), 'Debe agregar una fecha válida'),
+        coments: yup.string().required()
+        .min(3, 'Mínimo 3 caracteres.')
+        .max(200, 'Máximo 200 caracteres.'),
         privateComents: yup.string()
+        .max(200, 'Máximo 200 caracteres.'),
     })
     .required()
 

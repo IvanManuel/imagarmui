@@ -1,61 +1,12 @@
-
-import { AccountCircleOutlined, AddOutlined, ConfirmationNumberOutlined, DeleteOutlineOutlined, ExitToAppOutlined } from '@mui/icons-material'
-import { Chip, Grid, Box, Button } from '@mui/material';
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { UserCard } from "@/components/user/UserCard"
+import { Grid } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { IUser } from '@/interfaces';
-import { useState, useEffect, FC } from 'react';
 import { imagarApi } from '@/api';
-import { useAuthStore } from '@/hooks';
-import { useRouter } from 'next/router';
+import { UserList } from "@/components/user/UserList";
 
 
-const columns: GridColDef[] = [
-    { field: 'id', headerName: 'User ID', width: 220 },
-    { field: 'firstName', headerName: 'Nombre', width: 120 },
-    { field: 'lastName', headerName: 'Apellido', width: 120 },
-    { field: 'email', headerName: 'Correo', width: 200 },
-    { field: 'phone', headerName: 'Teléfono', width: 100 },
-    { field: 'admin', headerName: 'Rol', width: 100 },
-    { field: 'bornedAt', headerName: 'F Nacimiento', align: 'center', width: 150 },
-    {
-        field: 'check',
-        headerName: 'Ver detalle',
-        renderCell: ({ row }: GridRenderCellParams) => {
-            return (
-                <a href={`/users/${row.id}`}>
-                    Ver Detalles
-                </a>
-            )
-        }
-    },
-    {
-        field: 'edit',
-        headerName: 'Editar',
-        renderCell: ({ row }: GridRenderCellParams) => {
-            return <a href={`/admin/users/${row.id}`} target='_blank' rel='noreferrer'>
-                Editar</a>
-
-        }
-    },
-    {
-        field: 'delete',
-        headerName: 'Borrar',
-        renderCell: ({ row }: GridRenderCellParams) => {
-            return <DeleteOutlineOutlined />
-        }
-    }
-];
-
-const UsersPage: FC = () => {
-
-    const { user, checkAuthToken, startLogout } = useAuthStore();
-    const router = useRouter();
-
-    console.log('STATUSUSER', user)
-
-    useEffect(() => {
-        checkAuthToken();
-    }, [])
+const HomePage = () => {
 
     const [users, setUsers] = useState<IUser[]>([]);
 
@@ -65,74 +16,23 @@ const UsersPage: FC = () => {
                 setUsers(res.data)
             })
     }, [])
+    
+  return (
+    <>
+     <Grid
+      container
+      spacing={ 0 }
+      alignItems="center"
+      justifyContent="center"
+      sx={{ minHeight: '100vh', 
+      backgroundColor: 'secondary.main' }}
+    >
+        
+    <UserList users={ users } />
 
-    if (!users) return (<></>);
-
-    const rows = users!.map(user => ({
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        bornedAt: user.bornedAt,
-        coments: user.coments,
-        privateComents: user.privateComents,
-        admin: user.admin,
-    }))
-
-    const onProfile = () =>{
-        console.log(user.uid);  
-        if (user.uid === undefined) return;
-        router.push(`/users/${ user.uid}`)
-    }
-
-    const signOut = () => {
-        startLogout();
-    }
-
-    return (
-        <>
-            <Box
-                display='flex'
-                justifyContent='end'
-                sx={{ mt: 1 }}
-            >
-                <Button
-                    startIcon={<AccountCircleOutlined />}
-                    color="secondary"
-                    onClick={ onProfile }
-                >
-                    Perfil
-                </Button>
-                <Button
-                    startIcon={<ExitToAppOutlined />}
-                    color="secondary"
-                    sx={{ mr: 1, ml: 1 }}
-                    onClick={signOut}
-                >
-                    LogOut
-                </Button>
-            </Box>
-
-            <Grid container className='fadeIn' sx={{ mt: 1 }}>
-                <Grid item xs={12} sx={{ height: 650, width: '100%' }}>
-                    <DataGrid
-                        rows={rows}
-                        columns={columns}
-                        initialState={{
-                            pagination: {
-                                paginationModel: {
-                                    pageSize: 5,
-                                },
-                            },
-                        }}
-                        pageSizeOptions={[5]}
-                        disableRowSelectionOnClick
-                    />
-                </Grid>
-            </Grid>
-        </>
-    )
+    </Grid>
+    </>
+  )
 }
 
-export default UsersPage;
+export default HomePage

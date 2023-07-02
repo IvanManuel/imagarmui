@@ -34,8 +34,8 @@ const userSchema = new Schema({
         maxLength: 10
     },
     images: [{ type: String }],
-    bornedAt: { //VERIFICAR QUE LOS DATOS VENGAN CON FORMATO DEL FRONTEND
-        type: Date,
+    bornedAt: { 
+        type: String,
         required: true,
     },
     admin: { 
