@@ -1,18 +1,17 @@
+import { useState } from 'react';
+import { useRouter } from "next/router"
+import NextLink from 'next/link'
+
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
-import React from "react"
-import { imagarApi } from "@/api"
-import Cookies from 'js-cookie';
-import { Box, Button, Grid, Link, TextField, Typography, Chip } from '@mui/material';
-import { validations } from '@/utils';
-import { ErrorOutline } from '@mui/icons-material';
-import { useState } from 'react';
-import { useAuthStore } from '@/hooks';
-import { useRouter } from "next/router"
-import { LoginLayout } from "@/components/layouts/LoginLayout"
-import NextLink from 'next/link'
 
+import { Box, Button, Grid, Link, TextField, Typography, Chip } from '@mui/material';
+import { ErrorOutline } from '@mui/icons-material';
+
+import { validations } from '@/utils';
+import { useAuthStore } from '@/hooks';
+import { LoginLayout } from '@/components/layouts';
 
 type FormData = {
     email: string;
@@ -21,15 +20,19 @@ type FormData = {
 
 const schema = yup
     .object({
-        email: yup.string().required(),
-        password: yup.string().required(),
+        email: yup.string().email('Ingresa un email válido').required('Required'),
+        password: yup.string()
+            .required('No password provided.')
+            .min(8, 'Mínimo 8 caracteres.')
+            .max(50, 'Máximo 50 caracteres.')
+            .matches(validations.passwordRegex, 'Formato de contraseña inválido'),
     })
     .required()
 
 
 const LoginPage = () => {
 
-    const [ showError, setShowError ] = useState(false);
+    const [showError, setShowError] = useState(false);
     const router = useRouter();
 
     const {
@@ -44,26 +47,26 @@ const LoginPage = () => {
 
     const onSubmit = async (data: FormData) => {
         await startLogin(data);
-        if( status === 'authenticated' ) {
+        if (status === 'authenticated') {
             router.push('/');
         }
 
     }
 
-
     return (
-        <LoginLayout>
+        <LoginLayout title={"Login"} pageDescription={"Inicia sessión para acceder a nuestro panel de usuario"}>
             <form onSubmit={handleSubmit(onSubmit)} >
-            <Box sx={{ mr: 5, ml: 5 }} >
+
                 <Grid
                     container
                     spacing={2}
                     alignContent='center'
+                    justifyContent='center'
+                    direction="column"
                 >
-                    <Grid 
-                        item 
-                        xs={12}
-                        sx={{ mb: 2}}
+                    <Grid
+                        item
+                        sx={{ mb: 2 }}
                     >
                         <Typography variant="h1" >Login</Typography>
                         <Chip
@@ -75,12 +78,11 @@ const LoginPage = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid item >
                         <TextField
                             type='email'
                             label="Correo"
                             variant="filled"
-                            fullWidth
                             {...register('email', {
                                 required: 'Este campo es requerido',
                                 validate: validations.isEmail
@@ -91,12 +93,11 @@ const LoginPage = () => {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid item>
                         <TextField
                             label="Contraseña"
                             type='password'
                             variant="filled"
-                            fullWidth
                             {...register('password', {
                                 required: 'Esta campo es requerido',
                                 minLength: { value: 6, message: 'Mínimo 6 caracteres' }
@@ -107,24 +108,26 @@ const LoginPage = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                    <Box display='flex' justifyContent='center' sx={{ mb: 1 }}>
-                        <Button
-                            type='submit'
-                            color="secondary"                            
-                            className="circular-btn"
-                            size='large'
-                        >
-                            Login
-                        </Button>
+                        <Box display='flex' justifyContent='center' sx={{ mb: 1 }}>
+                            <Button
+                                type='submit'
+                                color="secondary"
+                                className="circular-btn"
+                                size='large'
+                            >
+                                Login
+                            </Button>
                         </Box>
                     </Grid>
 
-                            <Typography>Haz click aquí para </Typography>
-                    <NextLink href="/auth/register">Registrar</NextLink>
+                    <Grid item>
+                        <Typography>Haz click aquí para </Typography>
+                        <NextLink href="/user/register">Registrar</NextLink>
+                    </Grid>
 
                 </Grid>
-            </Box>
-        </form>
+
+            </form>
         </LoginLayout>
     )
 }

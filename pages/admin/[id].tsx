@@ -1,10 +1,12 @@
-import { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
+import { ChangeEvent, FC, useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
-import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 
-import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField, Typography } from '@mui/material';
-import { DriveFileRenameOutline, SaveOutlined, UploadOutlined } from '@mui/icons-material';
+import { useForm } from 'react-hook-form';
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { Box, Button, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField, Typography } from '@mui/material';
+import { ArrowBack, SaveOutlined, UploadOutlined } from '@mui/icons-material';
 
 import { IUser } from '@/interfaces';
 import { dbUsers } from '@/database';
@@ -12,7 +14,8 @@ import { imagarApi } from '@/api';
 import { validations } from '@/utils';
 import { RegisterLayout } from '@/components/layouts/RegisterLayout';
 import { fileUpload } from '@/helpers';
-import { startUploadingFiles } from '@/hooks/useUploadStore';
+import { User } from '@/models';
+import NextLink from 'next/link';
 
 
 interface FormData {
@@ -20,49 +23,61 @@ interface FormData {
     firstName: string;
     lastName: string;
     email: string;
-    password: string;
     phone: string;
     images: string[];
     bornedAt: string;
+    admin: boolean;
     coments: string;
-    privateComents: string; //Hay que mirar esto para que solo sea string
+    privateComents: string;
 }
 
 interface Props {
     user: IUser;
 }
 
+const schema = yup
+    .object({
+        firstName: yup.string().required().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!'),
+        lastName: yup.string().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!').required(),
+        email: yup.string().email('Ingresa un email válido').required('Required'),
+        phone: yup.string().required()
+            .min(9, 'Son 9 caracteres.')
+            .max(9, 'Son 9 caracteres.')
+            .matches(validations.onlyNumbers, 'Sólo debe contener números'),
+        photo: yup.string(),
+        bornedAt: yup.date().required().nullable().min(new Date(1900, 0, 1), 'Debe agregar una fecha válida'),
+        coments: yup.string().required()
+            .min(3, 'Mínimo 3 caracteres.')
+            .max(200, 'Máximo 200 caracteres.'),
+        privateComents: yup.string()
+            .max(200, 'Máximo 200 caracteres.'),
+    })
+    .required()
+
 const UserAdminPage: FC<Props> = ({ user }) => {
 
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const [checked, setChecked] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-
     const { register, handleSubmit, formState: { errors }, getValues, setValue } = useForm<FormData>({
-        defaultValues: user
+        defaultValues: user,
+        resolver: yupResolver(schema),
     })
 
     const onFilesSelected = async ({ target }: ChangeEvent<HTMLInputElement>) => {
-
         const { files } = target;
-
         if (!files || files.length === 0) {
             return;
         }
 
         const fileUploadPromises = [];
-        //fileUploadPromises.push( fileUpload( files[0] ) )
         for (const file of files) {
-            fileUploadPromises.push( fileUpload( file ) )
+            fileUploadPromises.push(fileUpload(file))
         }
-
-        const photosUrls = await Promise.all( fileUploadPromises );
-
-        console.log('PHOTOSURLS', photosUrls)
-
+        const photosUrls = await Promise.all(fileUploadPromises);
         setValue('images', [...getValues('images'), photosUrls[0]], { shouldValidate: true })
-
     }
 
     const onDeleteImage = (image: string) => {
@@ -72,37 +87,55 @@ const UserAdminPage: FC<Props> = ({ user }) => {
         );
     }
 
-    const onSubmit = async (form: FormData) => {
+    const handleChange = (event) => {
+        setChecked(event.target.checked);
+    };
 
+    const onBack = () => {
+        router.push('/')
+    }
+
+    const onSubmit = async (form: FormData) => {
+        console.log('Click en boton')
         if (form.images.length > 1) return alert('Máximo 1 imagen');
         setIsSaving(true);
 
         try {
+
             const { data } = await imagarApi({
-                url: '/admin/users',
-                method: form._id ? 'PUT' : 'POST', //si tenemos _id actualizarm sino crear
+                url: 'user/api',
+                method: 'PUT', //si tenemos _id actualizarm sino crear
                 data: form
             });
 
             if (!form._id) {
-                router.replace(`/`) 
+                router.replace(`/`)
             } else {
                 setIsSaving(false)
             }
-
         } catch (error) {
             console.log({ error });
             setIsSaving(false);
         }
-
     }
 
     return (
         <RegisterLayout>
             <form onSubmit={handleSubmit(onSubmit)}>
-            <Typography variant="h1" >Editar usuario</Typography>
+                <Typography variant="h1" >Editar usuario </Typography>
+                <Typography>{user._id}</Typography>
+
                 <Box display='flex' justifyContent='end' sx={{ mb: 1 }}>
-                
+
+                    <Button
+                        color="secondary"
+                        startIcon={<ArrowBack />}
+                        sx={{ width: '150px', mr:1 }}
+                        disabled={isSaving}
+                        onClick={ onBack }
+                    >
+                        Volver
+                    </Button>
                     <Button
                         color="secondary"
                         startIcon={<SaveOutlined />}
@@ -113,6 +146,21 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                         Guardar
                     </Button>
                 </Box>
+
+                <Grid>
+                    <TextField
+                        type="checkbox"
+                        variant="filled"
+                        {...register('admin', {
+                            required: 'Esta campo es requerido',
+                            minLength: { value: 3, message: 'Mínimo 3 caracteres' },
+                            maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+                        })}
+                        error={!!errors.admin}
+                        helperText={errors.admin?.message}
+                    />
+                    <Typography>Marque si el usuario es administrador</Typography>
+                </Grid>
 
                 <Grid container spacing={2}>
                     {/* Data */}
@@ -243,28 +291,26 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                                 onChange={onFilesSelected}
                             />
 
-                            <Grid container spacing={2}>
+                            <Grid container >
                                 {
                                     getValues('images').map(img => (
-                                        <Grid item xs={4} sm={3} key={img}>
-                                            <Card>
-                                                <CardMedia
-                                                    component='img'
-                                                    className='fadeIn'
-                                                    image={img}
-                                                    alt={img}
-                                                />
-                                                <CardActions>
-                                                    <Button
-                                                        fullWidth
-                                                        color="error"
-                                                        onClick={() => onDeleteImage(img)}
-                                                    >
-                                                        Borrar
-                                                    </Button>
-                                                </CardActions>
-                                            </Card>
-                                        </Grid>
+                                        <Card key={img}>
+                                            <CardMedia
+                                                component='img'
+                                                className='fadeIn'
+                                                image={img}
+                                                alt={img}
+                                            />
+                                            <CardActions>
+                                                <Button
+                                                    fullWidth
+                                                    color="error"
+                                                    onClick={() => onDeleteImage(img)}
+                                                >
+                                                    Borrar
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
                                     ))
                                 }
                             </Grid>
@@ -285,7 +331,28 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
 
     const { id = '' } = query;
 
-    const user = await dbUsers.getUserById(id.toString());
+    let user: IUser | null;
+
+    if (id === 'new') {
+        //crear un porducto
+        const tempProduct = JSON.parse(JSON.stringify(new User()))
+        delete tempProduct._id;
+
+        tempProduct.images = ['no-image.png'];
+        user = tempProduct;
+
+    } else {
+        user = await dbUsers.getUserById(id.toString());
+    }
+
+    if (!user) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
 
     return {
         props: {

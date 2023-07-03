@@ -3,6 +3,8 @@ import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router';
 
 import { useForm } from 'react-hook-form';
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField, Typography } from '@mui/material';
 import { SaveOutlined, UploadOutlined } from '@mui/icons-material';
 
@@ -12,6 +14,8 @@ import { imagarApi } from '@/api';
 import { validations } from '@/utils';
 import { RegisterLayout } from '@/components/layouts/RegisterLayout';
 import { fileUpload } from '@/helpers';
+import { User } from '@/models';
+import NextLink from 'next/link';
 
 
 interface FormData {
@@ -20,6 +24,7 @@ interface FormData {
     lastName: string;
     email: string;
     password: string;
+    passwordConfirmation: string;
     phone: string;
     images: string[];
     bornedAt: string;
@@ -32,14 +37,42 @@ interface Props {
     user: IUser;
 }
 
+const schema = yup
+    .object({
+        firstName: yup.string().required().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!'),
+        lastName: yup.string().min(3, 'Mínimo 3 caracteres!').max(100, '¡Máximo 100 caracteres!').required(),
+        email: yup.string().email('Ingresa un email válido').required('Required'),
+        password: yup.string()
+            .required('No password provided.')
+            .min(8, 'Mínimo 8 caracteres.')
+            .max(50, 'Máximo 50 caracteres.')
+            .matches(validations.passwordRegex, 'La contraseña debe contener un mínimo de 8 dígitos y al menos: una letra mayúscula: A-Z, una letra minúscula: a-z, un número: 0-9 y un símbolo: # ! , . %'),
+        passwordConfirmation: yup.string()
+            .oneOf([yup.ref('password'), null], 'Contraseñas no corresponden'),
+        phone: yup.string().required()
+            .min(9, 'Son 9 caracteres.')
+            .max(9, 'Son 9 caracteres.')
+            .matches(validations.onlyNumbers, 'Sólo debe contener números'),
+        photo: yup.string(),
+        bornedAt: yup.date().required().nullable().min(new Date(1900, 0, 1), 'Debe agregar una fecha válida'),
+        coments: yup.string().required()
+            .min(3, 'Mínimo 3 caracteres.')
+            .max(200, 'Máximo 200 caracteres.'),
+        privateComents: yup.string()
+            .max(200, 'Máximo 200 caracteres.'),
+    })
+    .required()
+
 const UserAdminPage: FC<Props> = ({ user }) => {
 
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const [checked, setChecked] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const { register, handleSubmit, formState: { errors }, getValues, setValue } = useForm<FormData>({
-        defaultValues: user
+        defaultValues: user,
+        resolver: yupResolver(schema),
     })
 
     const onFilesSelected = async ({ target }: ChangeEvent<HTMLInputElement>) => {
@@ -63,22 +96,24 @@ const UserAdminPage: FC<Props> = ({ user }) => {
         );
     }
 
+    const handleChange = (event) => {
+        setChecked(event.target.checked);
+    };
+
     const onSubmit = async (form: FormData) => {
+        console.log('Click en boton')
         if (form.images.length > 1) return alert('Máximo 1 imagen');
         setIsSaving(true);
 
         try {
+
             const { data } = await imagarApi({
-                url: '/admin/users',
-                method: form._id ? 'PUT' : 'POST', //si tenemos _id actualizarm sino crear
+                url: 'user/api',
+                method: 'POST', //si tenemos _id actualizarm sino crear
                 data: form
             });
 
-            if (!form._id) {
-                router.replace(`/`)
-            } else {
-                setIsSaving(false)
-            }
+            
         } catch (error) {
             console.log({ error });
             setIsSaving(false);
@@ -88,11 +123,10 @@ const UserAdminPage: FC<Props> = ({ user }) => {
     return (
         <RegisterLayout>
             <form onSubmit={handleSubmit(onSubmit)}>
-                {
-                    (user._id)
-                        ? <Typography variant="h1" >Editar usuario</Typography>
-                        : <Typography variant="h1" >Registro</Typography>
-                }
+                <Typography variant="h1" >Registro</Typography>
+                <Typography>Si ya posees una cuenta, inicia sesión en</Typography>
+                <NextLink href="/auth/login">Login</NextLink>
+
 
                 <Box display='flex' justifyContent='end' sx={{ mb: 1 }}>
 
@@ -169,6 +203,36 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                         />
 
                         <TextField
+                            label="Contraseña"
+                            type='password'
+                            variant="filled"
+                            fullWidth
+                            sx={{ mb: 1 }}
+                            {...register('password', {
+                                required: 'Esta campo es requerido',
+                                validate: validations.isValidPassword,
+                                minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                                maxLength: { value: 100, message: 'Máximo 100 caracteres' }
+                            })}
+                            error={!!errors.password}
+                            helperText={errors.password?.message}
+                        />
+
+                        <TextField
+                            label="Repetir Contraseña"
+                            type='password'
+                            variant="filled"
+                            fullWidth
+                            sx={{ mb: 1 }}
+                            {...register('passwordConfirmation', {
+                                required: 'Esta campo es requerido',
+                                minLength: { value: 6, message: 'Mínimo 6 caracteres' }
+                            })}
+                            error={!!errors.passwordConfirmation}
+                            helperText={errors.passwordConfirmation?.message}
+                        />
+
+                        <TextField
                             label="Teléfono"
                             type='tel'
                             pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
@@ -216,18 +280,34 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                             helperText={errors.coments?.message}
                         />
 
-                        <TextField
-                            label="Comentarios Privados"
-                            variant="filled"
-                            fullWidth
-                            multiline={true} //multiline esta dando error de re-renderizado
-                            sx={{ mb: 1 }}
-                            {...register('privateComents', {
-                                required: 'Este campo es requerido',
-                            })}
-                            error={!!errors.privateComents}
-                            helperText={errors.privateComents?.message}
-                        />
+                        {
+                            (!user._id) && (
+                                <Box display='flex' alignItems='center' sx={{ mt: 1, mb: 1 }}>
+                                    <Typography>Añadir comentario privado</Typography>
+                                    <Checkbox
+                                        checked={checked}
+                                        onChange={handleChange}
+                                        inputProps={{ 'aria-label': 'primary checkbox' }}
+                                    />
+                                </Box>
+                            )
+                        }
+
+                        {
+                            (user._id || checked) && (
+                                <TextField
+                                    label="Comentarios Privados"
+                                    variant="filled"
+                                    fullWidth
+                                    multiline={true} //multiline esta dando error de re-renderizado
+                                    sx={{ mb: 1 }}
+                                    {...register('privateComents', {
+                                        required: 'Este campo es requerido',
+                                    })}
+                                    error={!!errors.privateComents}
+                                    helperText={errors.privateComents?.message}
+                                />
+                            )}
 
                         <Divider sx={{ my: 2 }} />
 
@@ -281,7 +361,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
 
                 </Grid>
             </form>
-        </RegisterLayout>
+        </RegisterLayout >
     )
 }
 
@@ -291,7 +371,28 @@ export const getServerSideProps: GetServerSideProps = async ({ req, query }) => 
 
     const { id = '' } = query;
 
-    const user = await dbUsers.getUserById(id.toString());
+    let user: IUser | null;
+
+    if (id === 'new') {
+        //crear un porducto
+        const tempProduct = JSON.parse(JSON.stringify(new User()))
+        delete tempProduct._id;
+
+        tempProduct.images = ['no-image.png'];
+        user = tempProduct;
+
+    } else {
+        user = await dbUsers.getUserById(id.toString());
+    }
+
+    if (!user) {
+        return {
+            redirect: {
+                destination: '/',
+                permanent: false,
+            }
+        }
+    }
 
     return {
         props: {

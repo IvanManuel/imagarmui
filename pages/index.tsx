@@ -1,37 +1,42 @@
-import { UserCard } from "@/components/user/UserCard"
-import { Grid } from '@mui/material';
+
 import { useState, useEffect } from 'react';
-import { IUser } from '@/interfaces';
+import { useRouter } from 'next/router';
+
+import { Grid, Button, Box, Container } from '@mui/material';
+
+import { UiProvider } from '../context/ui/UiProvider';
 import { imagarApi } from '@/api';
+import { IUser } from '@/interfaces';
 import { UserList } from "@/components/user/UserList";
+import { MainLayout } from '@/components/layouts';
+import { useAuthStore } from '@/hooks';
 
 
 const HomePage = () => {
 
-    const [users, setUsers] = useState<IUser[]>([]);
+  const router = useRouter();
+  const { user } = useAuthStore();
 
-    useEffect(() => {
-        imagarApi.get('user/update').then(
-            (res) => {
-                setUsers(res.data)
-            })
-    }, [])
-    
+
+  if (!user) {
+    router.push('/auth/login')
+  }
+
+  const [users, setUsers] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    imagarApi.get('user/api').then(
+      (res) => {
+        setUsers(res.data)
+      })
+  }, [])
+
   return (
-    <>
-     <Grid
-      container
-      spacing={ 0 }
-      alignItems="center"
-      justifyContent="center"
-      sx={{ minHeight: '100vh', 
-      backgroundColor: 'secondary.main' }}
-    >
-        
-    <UserList users={ users } />
-
-    </Grid>
-    </>
+    <MainLayout title={"Home"} pageDescription={"Web basada en NextJS, Typescript, Redux..."}>
+      <Grid item sx={{ mt: 2, mb: 5 }}>
+        <UserList users={users} />
+      </Grid>
+    </MainLayout>
   )
 }
 

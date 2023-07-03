@@ -45,7 +45,7 @@ export const useAuthStore = () => {
                 coments: data.user.coments,
                 privateComents: data.user.privateComents,
                 photoURL: data.user.photoURL
-            }) );            
+            }) );
             
         } catch (error) {
             dispatch( onLogout( error.response.data?.msg || '--' ) );
@@ -73,7 +73,7 @@ export const useAuthStore = () => {
                 coments: data.user.coments,
                 privateComents: data.user.privateComents,
                 photoURL: data.user.photoURL
-            }) );                       
+            }) );
         } catch (error) {
             dispatch( onLogout('Credenciales incorrectas') );
             setTimeout(() => {
@@ -86,7 +86,7 @@ export const useAuthStore = () => {
         const token = localStorage.getItem('token');
         if ( !token ) {
             dispatch( onLogout() );
-            router.push('/auth/login');
+            router.push('/user/login');
         }
         
     }
@@ -94,7 +94,7 @@ export const useAuthStore = () => {
     const startLogout = () => {
         localStorage.clear();
         dispatch( onLogout() );
-        router.push('/auth/login');
+        router.push('/user/login');
     }
 
     return {
