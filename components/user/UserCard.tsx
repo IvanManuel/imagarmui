@@ -7,6 +7,7 @@ import { Grid } from '@mui/material';
 import { IUser } from '@/interfaces';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+import { useSelector } from 'react-redux';
 
 interface Props {
   user: IUser;
@@ -14,7 +15,9 @@ interface Props {
 
 
 export const UserCard: FC<Props> = ({ user }) => {
+  
   const router = useRouter();
+  const { user: userState } = useSelector(state => state.auth);
 
   const onClickEdit = () => {
     router.push(`/admin/${user._id}`)
@@ -75,7 +78,11 @@ export const UserCard: FC<Props> = ({ user }) => {
           </IconButton>          
         </Grid>
 
-        <Grid item sx={{ ml: 2, mr: 2, mt: 2, mb: 2 }}>
+        {
+          userState.admin === true
+          && (
+            <>
+            <Grid item sx={{ ml: 2, mr: 2, mt: 2, mb: 2 }}>
         <IconButton aria-label="previous" onClick={onClickEdit}>
             <EditOutlined />
             <Typography>Editar</Typography>
@@ -88,6 +95,9 @@ export const UserCard: FC<Props> = ({ user }) => {
             <Typography>Eliminar</Typography>
           </IconButton>
         </Grid>
+            </>
+          )
+        }
 
 
     </Grid>

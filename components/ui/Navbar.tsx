@@ -3,12 +3,16 @@ import { useContext, useState } from "react";
 import { useRouter } from "next/router";
 
 import { AppBar, Badge, Box, Button, CardMedia, IconButton, Input, InputAdornment, Link, Toolbar, Typography } from "@mui/material";
-import { ArrowBackOutlined, WorkOutline, ClearOutlined, SearchOutlined, ShoppingCartOutlined, SchoolOutlined, StadiumOutlined, Person, ExitToApp, Menu } from '@mui/icons-material';
+import { ArrowBackOutlined, WorkOutline, ClearOutlined, SearchOutlined, ShoppingCartOutlined, SchoolOutlined, StadiumOutlined, Person, ExitToApp, Menu, Edit } from '@mui/icons-material';
 import { UiContext } from "@/context/ui";
 import { useAuthStore } from '@/hooks';
+import { useSelector } from 'react-redux';
 
 
 export const Navbar = () => {
+
+    const { user } = useSelector(state => state.auth);
+    console.log({user})
 
     const { asPath, push } = useRouter();
     const { startLogout } = useAuthStore();
@@ -79,24 +83,30 @@ export const Navbar = () => {
                 <Box sx={{ display: isSearchVisible ? 'none' : { xs: 'none', sm: 'block' } }}
                     className='fadeIn'
                 >
-                    <NextLink href='/user/new' passHref legacyBehavior>
-                        <Link>
+                    {/* PERFIL CON HREF CON ID DEL STORE */}
+
+                    <Link href={`/profile/${user._id}`} passHref legacyBehavior> 
                             <IconButton>
                                 <Person />
-                                <Button color={asPath === '/user/new' ? 'primary' : 'info'}>Perfil</Button>
+                                <Typography>Perfil</Typography>
                             </IconButton>
-                        </Link>
-                    </NextLink>
+                    </Link>
 
-                    <NextLink href='/auth/login' passHref legacyBehavior>
-                        <Link>
+                    <Link href={`/admin/${user._id}`} passHref legacyBehavior> 
+                            <IconButton>
+                                <Edit />
+                                <Typography>Editar Perfil</Typography>
+                            </IconButton>
+                    </Link>
+
+
+                    <NextLink href='/user/login' passHref legacyBehavior>
+
                             <IconButton onClick={signOut}>
                                 <ExitToApp />
-                                <Button 
-                                    color={asPath === '/category/job' ? 'primary' : 'info'}
-                                    >Salir</Button>
+                                <Typography>Salir</Typography>
                             </IconButton>
-                        </Link>
+
                     </NextLink>
                 </Box>
 

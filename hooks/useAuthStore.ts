@@ -1,8 +1,11 @@
+
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/router';
+
 import { imagarApi } from '../api';
 import { clearErrorMessage, onChecking, onLogin, onLogout } from '../store/auth';
 import { IUser } from '@/interfaces';
-import { useRouter } from 'next/router';
+
 
 type registerData = {
     firstName: string;
@@ -32,20 +35,7 @@ export const useAuthStore = () => {
         try {
             const { data } = await imagarApi.post('user/register', form );
             localStorage.setItem('token', data.token );
-            dispatch( onLogin({
-                uid: data.user._id,
-                firstName: data.user.firstName,
-                lastName: data.user.lastName,
-                email: data.user.email,
-                password: data.user.password,
-                phone: data.user.phone,
-                images: data.user.images,
-                bornedAt: data.user.bornedAt,
-                admin: data.user.admin,
-                coments: data.user.coments,
-                privateComents: data.user.privateComents,
-                photoURL: data.user.photoURL
-            }) );
+            dispatch( onLogin( data ) );
             
         } catch (error) {
             dispatch( onLogout( error.response.data?.msg || '--' ) );
@@ -60,20 +50,8 @@ export const useAuthStore = () => {
         try {
             const { data } = await imagarApi.post('user/login',{ email, password });
             localStorage.setItem('token', data.token );
-            dispatch( onLogin({
-                uid: data.user._id,
-                firstName: data.user.firstName,
-                lastName: data.user.lastName,
-                email: data.user.email,
-                password: data.user.password,
-                phone: data.user.phone,
-                images: data.user.images,
-                bornedAt: data.user.bornedAt,
-                admin: data.user.admin,
-                coments: data.user.coments,
-                privateComents: data.user.privateComents,
-                photoURL: data.user.photoURL
-            }) );
+            dispatch( onLogin({ admin: data.admin, _id: data._id }) );
+            router.push('/');
         } catch (error) {
             dispatch( onLogout('Credenciales incorrectas') );
             setTimeout(() => {

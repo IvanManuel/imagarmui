@@ -67,6 +67,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
     })
 
     const onFilesSelected = async ({ target }: ChangeEvent<HTMLInputElement>) => {
+            console.log(target)
         const { files } = target;
         if (!files || files.length === 0) {
             return;

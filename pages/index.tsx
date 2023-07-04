@@ -14,14 +14,6 @@ import { useAuthStore } from '@/hooks';
 
 const HomePage = () => {
 
-  const router = useRouter();
-  const { user } = useAuthStore();
-
-
-  if (!user) {
-    router.push('/auth/login')
-  }
-
   const [users, setUsers] = useState<IUser[]>([]);
 
   useEffect(() => {

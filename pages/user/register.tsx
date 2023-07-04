@@ -1,5 +1,4 @@
 import { ChangeEvent, FC, useRef, useState } from 'react'
-import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router';
 
 import { useForm } from 'react-hook-form';
@@ -9,12 +8,10 @@ import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, 
 import { SaveOutlined, UploadOutlined } from '@mui/icons-material';
 
 import { IUser } from '@/interfaces';
-import { dbUsers } from '@/database';
 import { imagarApi } from '@/api';
 import { validations } from '@/utils';
 import { RegisterLayout } from '@/components/layouts/RegisterLayout';
 import { fileUpload } from '@/helpers';
-import { User } from '@/models';
 import NextLink from 'next/link';
 
 
@@ -63,7 +60,7 @@ const schema = yup
     })
     .required()
 
-const UserAdminPage: FC<Props> = ({ user }) => {
+const RegisterPage: FC<Props> = () => {
 
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -71,7 +68,6 @@ const UserAdminPage: FC<Props> = ({ user }) => {
     const [checked, setChecked] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const { register, handleSubmit, formState: { errors }, getValues, setValue } = useForm<FormData>({
-        defaultValues: user,
         resolver: yupResolver(schema),
     })
 
@@ -86,7 +82,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
             fileUploadPromises.push(fileUpload(file))
         }
         const photosUrls = await Promise.all(fileUploadPromises);
-        setValue('images', [...getValues('images'), photosUrls[0]], { shouldValidate: true })
+        setValue('images', [ photosUrls[0]], { shouldValidate: true })
     }
 
     const onDeleteImage = (image: string) => {
@@ -101,7 +97,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
     };
 
     const onSubmit = async (form: FormData) => {
-        console.log('Click en boton')
+        console.log('DATA QUE VA AL API', form)
         if (form.images.length > 1) return alert('Máximo 1 imagen');
         setIsSaving(true);
 
@@ -113,7 +109,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                 data: form
             });
 
-            
+
         } catch (error) {
             console.log({ error });
             setIsSaving(false);
@@ -125,7 +121,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Typography variant="h1" >Registro</Typography>
                 <Typography>Si ya posees una cuenta, inicia sesión en</Typography>
-                <NextLink href="/auth/login">Login</NextLink>
+                <NextLink href="/user/login">Login</NextLink>
 
 
                 <Box display='flex' justifyContent='end' sx={{ mb: 1 }}>
@@ -280,21 +276,17 @@ const UserAdminPage: FC<Props> = ({ user }) => {
                             helperText={errors.coments?.message}
                         />
 
-                        {
-                            (!user._id) && (
-                                <Box display='flex' alignItems='center' sx={{ mt: 1, mb: 1 }}>
-                                    <Typography>Añadir comentario privado</Typography>
-                                    <Checkbox
-                                        checked={checked}
-                                        onChange={handleChange}
-                                        inputProps={{ 'aria-label': 'primary checkbox' }}
-                                    />
-                                </Box>
-                            )
-                        }
+                        <Box display='flex' alignItems='center' sx={{ mt: 1, mb: 1 }}>
+                            <Typography>Añadir comentario privado</Typography>
+                            <Checkbox
+                                checked={checked}
+                                onChange={handleChange}
+                                inputProps={{ 'aria-label': 'primary checkbox' }}
+                            />
+                        </Box>
 
                         {
-                            (user._id || checked) && (
+                            (checked) && (
                                 <TextField
                                     label="Comentarios Privados"
                                     variant="filled"
@@ -333,7 +325,7 @@ const UserAdminPage: FC<Props> = ({ user }) => {
 
                             <Grid container >
                                 {
-                                    getValues('images').map(img => (
+                                    (getValues('images')) && getValues('images').map(img => (
                                         <Card key={img}>
                                             <CardMedia
                                                 component='img'
@@ -365,40 +357,4 @@ const UserAdminPage: FC<Props> = ({ user }) => {
     )
 }
 
-// You should use getServerSideProps when:
-// - Only if you need to pre-render a page whose data must be fetched at request time
-export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
-
-    const { id = '' } = query;
-
-    let user: IUser | null;
-
-    if (id === 'new') {
-        //crear un porducto
-        const tempProduct = JSON.parse(JSON.stringify(new User()))
-        delete tempProduct._id;
-
-        tempProduct.images = ['no-image.png'];
-        user = tempProduct;
-
-    } else {
-        user = await dbUsers.getUserById(id.toString());
-    }
-
-    if (!user) {
-        return {
-            redirect: {
-                destination: '/',
-                permanent: false,
-            }
-        }
-    }
-
-    return {
-        props: {
-            user
-        }
-    }
-}
-
-export default UserAdminPage;
+export default RegisterPage;

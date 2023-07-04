@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useRouter } from "next/router"
+import { useState, useEffect } from 'react';
 import NextLink from 'next/link'
 
 import { useForm } from "react-hook-form"
@@ -33,7 +32,19 @@ const schema = yup
 const LoginPage = () => {
 
     const [showError, setShowError] = useState(false);
-    const router = useRouter();
+    const { startLogin, status } = useAuthStore();
+
+    useEffect(() => {
+        status;
+    }, [])
+
+    if (status === 'authenticated') {
+        <>Debe iniciar sesión <a ref='/user/login'></a></>
+    }
+
+    const onSubmit = async (data: FormData) => {
+        await startLogin(data);        
+    }
 
     const {
         register,
@@ -42,16 +53,6 @@ const LoginPage = () => {
     } = useForm<FormData>({
         resolver: yupResolver(schema),
     })
-
-    const { startLogin, status } = useAuthStore();
-
-    const onSubmit = async (data: FormData) => {
-        await startLogin(data);
-        if (status === 'authenticated') {
-            router.push('/');
-        }
-
-    }
 
     return (
         <LoginLayout title={"Login"} pageDescription={"Inicia sessión para acceder a nuestro panel de usuario"}>

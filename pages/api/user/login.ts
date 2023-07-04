@@ -24,11 +24,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
             return loginUser(req, res)
     
         default:
-            res.status(400).json({
+            res.status(409).json({
                 message: 'Bad request'
             })
     }
-
 }
 
 const loginUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
@@ -41,21 +40,21 @@ const loginUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     if ( !user ){
         return res.status(401).json({
-            message: 'Correo o conntraseña no válidos - EMAIL'
+            message: 'Correo no válido - EMAIL'
         })
     }
 
     if ( !bcrypt.compareSync( password, user.password! ) ){
-        return res.status(400).json({
-            message: 'Correo o conntraseña no válidos - EMAIL'
+        return res.status(402).json({
+            message: 'Conntraseña no válida - PASSWORD'
         })
     }
 
     const token = jwt.signToken( user._id, email )
+    const { _id, admin } = user;
 
     return res.status(200).json({
-        token, //JWT
-        user
+        token, _id, admin
     })
 
 }

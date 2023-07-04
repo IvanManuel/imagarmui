@@ -32,11 +32,10 @@ El STACK que estamos usando en este proyecto es el siguiente:
 ## Page
 
 /
-/auth/login 
-/auth/register
-/admin/users
-/users
- 
+/user/register
+/user/login
+/profile/[id]
+/admin/[id]
 
 ## Test 
 
